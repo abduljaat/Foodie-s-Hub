@@ -39,33 +39,9 @@ class _HomescreenState extends State<Homescreen> {
     setState(() {
       _selectedIndex = index;
     });
-    
-    // Navigate to the corresponding screen using named routes
-    switch (index) {
-      case 0:
-        Navigator.pushReplacementNamed(context, '/');
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, '/fav');
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/cart');
-        break;
-      case 3:
-        Navigator.pushReplacementNamed(context, '/profile');
-        break;
-    }
+     
   }
 
-  void _goToPage(int index) {
-    if (index >= 0 && index < _pages.length) {
-      _controller.animateToPage(
-        index,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
 
   @override
   void dispose() {
