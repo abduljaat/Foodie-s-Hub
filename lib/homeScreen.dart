@@ -1,5 +1,5 @@
-import 'package:basic_widgets/FoodItem.dart';
 import 'package:flutter/material.dart';
+import 'FoodItem.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -9,18 +9,74 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
-  int _selectedIndex = 0; // for tracking bottom nav state
+  int _selectedIndex = 0;
+  final PageController _controller = PageController(initialPage: 0);
+  int _currentPage = 0;
 
+  // 🧁 PageView Data
+  final List<Map<String, String>> _pages = [
+    {
+      "image": 'https://images.unsplash.com/photo-1648679708301-3e2865043526',
+      "title": "Delicious Pizza",
+      "desc": "Hot and cheesy pizza straight from the oven 🍕",
+    },
+    {
+      "image":
+          "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800",
+      "title": "Tasty Burger",
+      "desc": "Juicy beef burger with crispy fries 🍔",
+    },
+    {
+      "image":
+          'https://plus.unsplash.com/premium_photo-1667546202654-e7574a20872c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=873',
+      "title": "Sweet Dessert",
+      "desc": "Treat yourself with something sweet 🍰",
+    },
+  ];
+
+  // Handle bottom navigation bar item taps and navigation
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+    
+    // Navigate to the corresponding screen using named routes
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/fav');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/cart');
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(context, '/profile');
+        break;
+    }
+  }
+
+  void _goToPage(int index) {
+    if (index >= 0 && index < _pages.length) {
+      _controller.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //App Bar
+      // 🔸 App Bar
       appBar: AppBar(
         title: Text(
           "Foodie's Hub",
@@ -48,23 +104,30 @@ class _HomescreenState extends State<Homescreen> {
             ),
           ),
         ),
-        leading: IconButton(
-          onPressed: () => print("Menu clicked"),
-          icon: Icon(Icons.menu, color: Colors.white),
-        ),
+         leading: Builder(
+      builder: (context) => IconButton(
+        icon: Icon(Icons.menu, color: Colors.white),
+        onPressed: () {
+          Scaffold.of(context).openDrawer(); // now it works
+        },
+      ),
+    ),
         actions: [
           IconButton(
             onPressed: () => print("Search"),
-            icon: Icon(Icons.search, color: Colors.white),
+            icon: const Icon(Icons.search, color: Colors.white),
           ),
           IconButton(
-            onPressed: () => print("Cart"),
-            icon: Icon(Icons.shopping_cart, color: Colors.white),
+            onPressed: () => Navigator.pushReplacementNamed(context, '/cart'),
+            icon: const Icon(Icons.shopping_cart, color: Colors.white),
           ),
+          
         ],
+        
       ),
+      drawer: MyDrawer(),
 
-      // BODY
+      // 🔹 BODY
       body: Scrollbar(
         thumbVisibility: true,
         child: SingleChildScrollView(
@@ -73,6 +136,7 @@ class _HomescreenState extends State<Homescreen> {
               padding: EdgeInsets.all(16.0),
               child: Column(
                 children: [
+                  // 🔸 Greeting Section
                   Container(
                     height: MediaQuery.of(context).size.height * 0.22,
                     padding: EdgeInsets.symmetric(horizontal: 18),
@@ -144,9 +208,98 @@ class _HomescreenState extends State<Homescreen> {
                       ],
                     ),
                   ),
+
                   SizedBox(height: 20),
-        
-                  // Food Items Section
+
+                  // 🔹 PageView Section (Food Gallery)
+                  SizedBox(
+                    height: 300,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: PageView.builder(
+                            controller: _controller,
+                            scrollDirection: Axis.horizontal,
+                            onPageChanged: (index) {
+                              setState(() => _currentPage = index);
+                            },
+                            itemCount: _pages.length,
+                            itemBuilder: (context, index) {
+                              final page = _pages[index];
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Image.network(
+                                        page["image"]!,
+                                        fit: BoxFit.cover,
+                                      ),
+                                      Container(
+                                        color: Colors.black.withOpacity(0.4),
+                                      ),
+                                      Align(
+                                        alignment: Alignment.bottomCenter,
+                                        child: Container(
+                                          padding: EdgeInsets.all(12),
+                                          color: Colors.black26,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                page["title"]!,
+                                                style: TextStyle(
+                                                  fontSize: 22,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              Text(
+                                                page["desc"]!,
+                                                style: TextStyle(
+                                                  color: Colors.white70,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            _pages.length,
+                            (index) => AnimatedContainer(
+                              duration: Duration(milliseconds: 300),
+                              margin: EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 10,
+                              ),
+                              height: 10,
+                              width: _currentPage == index ? 30 : 10,
+                              decoration: BoxDecoration(
+                                color:
+                                    _currentPage == index
+                                        ? Colors.deepOrange
+                                        : Colors.grey[400],
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // 🔸 Popular Dishes Section
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Column(
@@ -160,7 +313,24 @@ class _HomescreenState extends State<Homescreen> {
                           ),
                         ),
                         SizedBox(height: 10),
-        
+                        FoodItemCard(
+                          imageUrl:
+                              'https://images.unsplash.com/photo-1600891964599-f61ba0e24092',
+                          title: 'Cheese Pizza',
+                          price: '\$12.99',
+                        ),
+                        FoodItemCard(
+                          imageUrl:
+                              'https://images.unsplash.com/photo-1648679708301-3e2865043526',
+                          title: 'Tikka Pizza',
+                          price: '\$10.49',
+                        ),
+                        FoodItemCard(
+                          imageUrl:
+                              'https://images.unsplash.com/photo-1586816001966-79b736744398',
+                          title: 'Zinger Burger',
+                          price: '\$8.99',
+                        ),
                         FoodItemCard(
                           imageUrl:
                               'https://images.unsplash.com/photo-1600891964599-f61ba0e24092',
@@ -203,10 +373,6 @@ class _HomescreenState extends State<Homescreen> {
                           title: 'Chicken Leg Piece',
                           price: '\$6.99',
                         ),
-        
-        
-        
-        
                       ],
                     ),
                   ),
@@ -217,7 +383,7 @@ class _HomescreenState extends State<Homescreen> {
         ),
       ),
 
-      //  Bottom Navigation Bar
+      // 🔻 Bottom Navigation Bar
      bottomNavigationBar: Container(
   decoration: BoxDecoration(
     gradient: LinearGradient(
@@ -254,8 +420,8 @@ class _HomescreenState extends State<Homescreen> {
         ),
       ],
     ),
-  ),
-      ),
+  ),),
+
     );
   }
 }
